@@ -24,7 +24,7 @@ def parse_recurrences(recur_rule, start, exclusions):
         dates.append(rule.strftime("%D %H:%M"))
     return dates
 
-icalfile = open('D:\Study_PC\TwP\E-ink-Projekt\Calender\SPLUSF88401_TZ_Berlin.ics', 'rb')
+icalfile = open('calendar\SPLUSF88401_TZ_Berlin.ics', 'rb')
 gcal = icalendar.Calendar.from_ical(icalfile.read())
 for component in gcal.walk():
     if component.name == "VEVENT":
