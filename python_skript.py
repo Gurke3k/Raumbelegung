@@ -34,7 +34,9 @@ def lookevents(gcal): #Sucht im iCalendar nach Events, die mit der lokalen Zeit 
             #exdate = component.get('exdate')
             #description = component.get('description')
             #location = component.get('location')
-
+            
+            
+            ''' -------- Der Teil funktioniert noch nicht, arbeite gerade hier --------
             #Prüfe ob es eine zeitliche Übereinstimmung in der Eventliste gibt
             if(currentTimeDate == startdt): #Übereinstimmung
                            
@@ -45,6 +47,7 @@ def lookevents(gcal): #Sucht im iCalendar nach Events, die mit der lokalen Zeit 
                 bStatus = False
 
             iEcount = iEcount + 1
+            '''
             
             tdeltaDauer = enddt - startdt #Berechne Event Dauer 
             tdeltaRestdauer = enddt - currentTimeDate #Berechne Restdauer eines Events
