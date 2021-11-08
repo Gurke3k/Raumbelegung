@@ -1,3 +1,7 @@
+'''
+v.0.1
+'''
+
 import time
 import requests as req
 import datetime
