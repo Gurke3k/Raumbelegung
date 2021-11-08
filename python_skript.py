@@ -47,7 +47,7 @@ def lookevents(gcal): #Sucht im iCalendar nach Events, die mit der lokalen Zeit 
             iEcount = iEcount + 1
             
             tdeltaDauer = enddt - startdt #Berechne Event Dauer 
-            tdeltaRestdauer = enddt - currentTimeDate #Berechne Restdauer eines Events, damit man später die Dauer der nächsten Abfrage starten kann
+            tdeltaRestdauer = enddt - currentTimeDate #Berechne Restdauer eines Events
 
             print(summary)
             print(startdt)
