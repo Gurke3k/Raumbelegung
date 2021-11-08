@@ -17,9 +17,9 @@ def readics(): #Lesen der ICS-Datei als iCalendar-Objekt und Rückgabe
     gcal = icalendar.Calendar.from_ical(icalfile.read())
     return gcal
 
-def lookevents(gcal): #Sucht im iCalendar nach Events, die mit der lokalen Zeit (nicht utc) übereinstimmen 
+def lookevents(gcal): #Sucht im iCalendar nach Events, die mit der lokalen Zeit übereinstimmen 
     
-    iEcount = 0 #Anzahl der Events in ics-Datei
+    iEcount = 0 #Anzahl der Events
     bStatus = False #Raumstatus FALSE = frei, TRUE = belegt
     currentTimeDate = datetime.datetime.today() #local time not utc
     
