@@ -1,0 +1,85 @@
+import time
+import requests as req
+import datetime
+import icalendar
+
+ics_url = "https://stundenplanung.eah-jena.de/ical/raum/SPLUSF88401.ics" #ICS-Datei mit Belegungsdaten für Raum 03.03.33
+raumname = "Raum 03.03.33"
+
+def getics(): #Herunterladen und Speichern der ICS
+    with req.get(ics_url) as rq:
+        with open('room_03-03-33.ics', 'wb') as file:
+            file.write(rq.content)
+            file.close()
+
+def readics(): #Lesen der ICS-Datei als iCalendar-Objekt und Rückgabe
+    icalfile = open('test_ics.ics')
+    gcal = icalendar.Calendar.from_ical(icalfile.read())
+    return gcal
+
+def main():
+
+    while True:
+        
+        events = list() #erstelle leere Liste
+        bRaumstatus = False #Raumbelegung schalten False = Raum frei, True = Raum belegt
+        currentdt = datetime.datetime.today() #local time
+        gcal = readics()
+
+        for component in gcal.walk(): #Durchläuft den Kalender und sucht nach Events, speichert die Daten in Dictionnaries in eine Liste
+            
+            if component.name == "VEVENT":
+                #Speichert die Komponenten eines Events in Variablen
+                startdt = component.get('dtstart').dt #Beginn
+                enddt = component.get('dtend').dt #Ende
+                sdescrp = component.get('Description')          
+                s = sdescrp.split('\n')
+                sdozent = s[0]
+                ssets = s[1]
+                seventname = s[2] #Darstellungsproblem mit dem Zeichen in der ics
+                
+                timestamp = startdt - currentdt #Zeitstempel
+                eventdur = enddt - startdt #Eventdauer
+                
+                if(timestamp.total_seconds() > eventdur.total_seconds()*(-1) and timestamp.total_seconds() < 0):
+                    bStatus = True
+                else:
+                    bStatus = False
+
+                #Füge anstehende und laufende Events der Liste hinzu
+                if(timestamp.total_seconds() > eventdur.total_seconds()*(-1)):
+                    events.append({'Veranstaltung':seventname, 'Dozent':sdozent, 'Start':startdt, 'Ende':enddt, 'Sets':ssets, 'Belegt':bStatus, 'Zeitstempel':timestamp.total_seconds(), 'Dauer':eventdur.total_seconds()})
+
+
+        #Durchsuche Liste nach anstehenden Events
+        for key,value in enumerate(events):           
+            
+            if(value['Belegt'] == True):
+                
+                i = events.index(value)
+                bRaumstatus = True
+                break
+           
+            else:
+        
+                bRaumstatus = False
+
+        #Raumbelegt
+        #Sende Information über Raumbelegung an Display
+        if(bRaumstatus == True):
+            print("Raum belegt von:")
+            print(events[i]['Dozent'])
+            print(events[i]['Veranstaltung'])
+            print(events[i]['Start'])
+            print(events[i]['Ende'])
+            #Pausiere Skriptablauf für Duration ?!
+            time.sleep(60) #Pausiere Ablauf des Skripts für 10s
+        else:
+            #Sende Information über Raumbelegung an Display
+            print("Raum frei")
+            time.sleep(60)
+
+
+
+getics() #einmal pro Tag soll das BS die ics-Datei der EAH Stundenplanwebseite abrufen
+main() #anschließend soll dieses Skript laufen
