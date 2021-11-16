@@ -1,0 +1,59 @@
+import logging
+import time
+from PIL import Image,ImageDraw,ImageFont
+
+
+logging.basicConfig(level=logging.DEBUG)
+
+textRoom = 'Raum: 03.33.33' #Raumnummer Plan
+textDate = 'Datum: ' #Datum Heutiger Tag
+textNext = 'Nächste Veranstaltung:' #Nächste Veranstaltung 
+textNextEventProf = '/n Prof. Dr. Erfurth' #Nächste Veranstaltung Prof.
+textNextEventSubject = 'WI/EC /n 17:00-20:00 Uhr' #Nächste Veranstaltung + Uhrzeit
+
+textOccupied = 'BESETZT' #Raum BESETZT
+textFree = 'FREI' #Raum FREI#
+
+#draw.text((30, 30), text1, fill ="white", font = font1, align ="left")
+#draw.text((308, 30), text2, fill ="white", font = font1, align ="right")
+#draw.text((150, 130), text3, fill ="red", font = font2, align ="center")
+#draw.text((30, 200), text4, fill ="white", font = font1, align ="left")
+#draw.text((308, 200), text5, fill ="white", font = font1, align ="right")
+
+logging.info("1.Drawing on the Horizontal image...") 
+
+#HBlackimage = Image.new('1', (648, 480), 255)  # 648*480
+#HRYimage = Image.new('1', (648, 480), 255)  # 648*480  HRYimage: red or yellow image  
+
+
+font30 = ImageFont.truetype(('Font.ttc'), 30)
+font18 = ImageFont.truetype(('Font.ttc'), 18)
+font90 = ImageFont.truetype(('Font.ttc'), 90)
+
+imgRoomFree = Image.open('layout_Room_Free.bmp')
+layoutRoomFree = ImageDraw.Draw(imgRoomFree)
+
+layoutRoomFree.text((30, 30), textRoom, fill = 'black', font=font30)
+layoutRoomFree.text((354, 30), textDate, fill = 'black', font=font30)
+layoutRoomFree.text((240, 170), textFree, fill = 'black', font=font90, align='center')
+layoutRoomFree.text((30, 358), textNext, fill = 'black', font=font18)
+layoutRoomFree.text((30, 388), textNextEventProf, fill = 'black', font=font18)
+layoutRoomFree.text((352, 358), textNextEventSubject, fill = 'black',font=font18)
+
+imgRoomFree.show()
+
+time.sleep(2)
+
+imgRoomOccupied = Image.open('layout_Room_Occupied.bmp')
+layoutRoomOccupied = ImageDraw.Draw(imgRoomOccupied)
+layoutRoomOccupied.text((30, 30), textRoom, fill = 'white', font=font30 )
+layoutRoomOccupied.text((354, 30), textDate, fill = 'white', font=font30)
+layoutRoomOccupied.text((150, 170), textOccupied, fill = 'white', font=font90, align='center')
+# nächste nicht needed cuz aktuelle miss displayt werden!
+layoutRoomOccupied.text((30, 388), textNextEventProf, fill = 'white', font=font18)
+layoutRoomOccupied.text((352, 358), textNextEventSubject, fill = 'white',font=font18)
+
+
+layoutRoomFree.text((30, 30), textRoom, fill = 'white', align='left',)
+
+imgRoomOccupied.show()
