@@ -30,12 +30,12 @@ try:
     textDate = '20.12.2022' #Datum Heutiger Tag
     staticTextNextEvent = 'nächste Veranstaltung:' #statischer text für nächste veranstaltung
     staticTextTimeConnect = '-' # - verbindung zwischen uhrzeiten
-
+    textEventProf = 'Prof. Dr. Erfurth' #Nächste Veranstaltung Prof.
+    textEventSubject = 'WI/EC Obj. Orient. Programmierung' #Nächste Veranstaltung Fach
+    textEventStart = '17:00' #Startzeit des nächsten events
+    textEventEnd = '20:00' #Endzeit des nächsten events
+    
     #allgemeine zusatztexte/variablen für event free
-    textNextEventProf = 'Prof. Dr. Erfurth' #Nächste Veranstaltung Prof.
-    textNextEventSubject = 'WI/EC Obj. Orient. Programmierung' #Nächste Veranstaltung Fach
-    textNextEventStart = '17:00' #Startzeit des nächsten events
-    textNextEventEnd = '20:00' #Endzeit des nächsten events
     staticTextFree = 'FREI' #Raum FREI
     staticTextRefresh = 'zuletzt aktualisiert:' #statischer text zuletzt aktualisiert
     textRefreshTime = '20:05' #Zeit zu der das Display zuletzt aktualisiert wurde
@@ -43,14 +43,10 @@ try:
     #zusatztexte/variablen für event free (ausschließlich für kein weirteres event am gleichen Tag)
     staticTextNoEvent = 'Heute sind keine weiteren Veranstaltungen geplant!' #statischer text für Heute keine weiteren Veranstaltungen geplant! (fall 2 of free display)
     staticTextNextEventAt = 'nächste Veranstaltung am:'
-    textNextEventDate = '22.12.2022'
+    textEventDate = '22.12.2022'
 
     #zusatztexte für event occupied
     staticTextCurrentEvent = 'aktuelle Veranstaltung:' #statischer text aktuelle Veranstaltung:
-    textCurrentEventProf = 'Prof. Dr. Erfurth' #aktuelle Veranstaltung Prof.
-    textCurrentEventSubject = 'WI/EC Obj. Orient. Programmierung' #aktuelle Veranstaltung Fach
-    textCurrentEventStart = '17:00' #Startzeit der aktuellen Veranstaltung
-    textCurrentEventEnd = '20:00' #Endzeit der aktuellen Veranstaltung
     staticTextOccupied = 'BESETZT' #Raum BESETZT
 
     font18 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 18)
@@ -73,12 +69,12 @@ try:
     layoutRoomFree.text((564, 70), textRefreshTime, fill = 'black', font=font25)
     layoutRoomFree.text((238, 180), staticTextFree, fill = 'black', font=font90)
     layoutRoomFree.text((25, 348), staticTextNextEvent, fill = 'black', font=font30)
-    layoutRoomFree.text((345, 345), textNextEventStart, fill = 'black', font=font35)
+    layoutRoomFree.text((345, 345), textEventStart, fill = 'black', font=font35)
     layoutRoomFree.text((440, 343), staticTextTimeConnect, fill = 'black', font=font35)
-    layoutRoomFree.text((460, 345), textNextEventEnd, fill = 'black', font=font35)
+    layoutRoomFree.text((460, 345), textEventEnd, fill = 'black', font=font35)
     layoutRoomFree.line((25, 383, 545, 383), fill = 'black', width=4)
-    layoutRoomFree.text((25, 400), textNextEventSubject, fill = 'black',font=font25)
-    layoutRoomFree.text((25, 432), textNextEventProf, fill = 'black', font=font25)
+    layoutRoomFree.text((25, 400), textEventSubject, fill = 'black',font=font25)
+    layoutRoomFree.text((25, 432), textEventProf, fill = 'black', font=font25)
         
     epd.displayblack(epd.getbuffer(imgRoomFree)) #Bild wird an Display gesendet
     
@@ -97,12 +93,12 @@ try:
     layoutRoomOccupied.text((400, 46), textDate, fill = 'white', font=font35)
     layoutRoomOccupiedRedText.text((150, 180), staticTextOccupied, fill = 0, font=font90)
     layoutRoomOccupied.text((25, 348), staticTextCurrentEvent, fill = 'white', font=font30)
-    layoutRoomOccupied.text((345, 345), textCurrentEventStart, fill = 'white', font=font35)
+    layoutRoomOccupied.text((345, 345), textEventStart, fill = 'white', font=font35)
     layoutRoomOccupied.text((440, 343), staticTextTimeConnect, fill = 'white', font=font35)
-    layoutRoomOccupied.text((460, 345), textCurrentEventEnd, fill = 'white', font=font35)
+    layoutRoomOccupied.text((460, 345), textEventEnd, fill = 'white', font=font35)
     layoutRoomOccupied.line((25, 383, 545, 383), fill = 'white',width=4)
-    layoutRoomOccupied.text((25, 400), textCurrentEventSubject, fill = 'white',font=font25)
-    layoutRoomOccupied.text((25, 432), textCurrentEventProf, fill = 'white', font=font25)
+    layoutRoomOccupied.text((25, 400), textEventSubject, fill = 'white',font=font25)
+    layoutRoomOccupied.text((25, 432), textEventProf, fill = 'white', font=font25)
       
     epd.display(epd.getbuffer(imgRoomOccupied), epd.getbuffer(layoutRoomOccupiedRed))
     
@@ -123,10 +119,10 @@ try:
     layoutRoomFreeRedText.text((25, 348), staticTextNoEvent, fill = 0, font=font25)
     layoutRoomFreeRedText.line((25, 380, 605, 380), fill = 0,width=4)
     layoutRoomFree.text((25, 400), staticTextNextEventAt, fill = 'black',font=font25)
-    layoutRoomFree.text((335, 400), textNextEventDate, fill = 'black',font=font25)
-    layoutRoomFree.text((335, 432), textNextEventStart, fill = 'black',font=font25)
+    layoutRoomFree.text((335, 400), textEventDate, fill = 'black',font=font25)
+    layoutRoomFree.text((335, 432), textEventStart, fill = 'black',font=font25)
     layoutRoomFree.text((405, 432), staticTextTimeConnect, fill = 'black',font=font25)
-    layoutRoomFree.text((420, 432), textNextEventEnd, fill = 'black', font=font25)
+    layoutRoomFree.text((420, 432), textEventEnd, fill = 'black', font=font25)
 
     epd.display(epd.getbuffer(imgRoomFree), epd.getbuffer(layoutRoomFreeRed))
     
