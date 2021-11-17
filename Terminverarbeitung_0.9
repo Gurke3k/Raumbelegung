@@ -1,0 +1,128 @@
+import time
+import requests as req
+import datetime
+import icalendar
+from PIL import Image, ImageDraw, ImageFont #image library
+from operator import attrgetter
+
+#Programmbeschreibung
+
+#Static Globals
+ics_url = "https://stundenplanung.eah-jena.de/ical/raum/SPLUSF88401.ics" #ICS-Datei mit Belegungsdaten für Raum 03.03.33
+raumname = "Raum 03.03.33"
+
+#Exception falls es zu einem Fehler beim Herunterladen kommt 
+
+def getics(): #Herunterladen und Speichern der ICS
+    
+    with req.get(ics_url, verify=False) as rq: #Zertifikatspfad statt False eintragen
+        with open('room_03-03-33.ics', 'wb') as file:
+            
+            file.write(rq.content)
+            file.close()
+
+
+def readics(): #Lesen der ICS-Datei als iCalendar-Objekt und Rückgabe
+    
+    icalfile = open('room_03-03-33.ics')
+    gcal = icalendar.Calendar.from_ical(icalfile.read())
+    return gcal
+
+def getupcoming_events(gcal, currentdt): #Durchsucht die ics und gibt eine sortierte Liste mit Event-Dictionnaries zurück
+
+    icsevents = list()
+
+    for component in gcal.walk(): #Durchläuft den Kalender und sucht nach Events, speichert die Daten in Dictionnaries in eine Liste
+        if component.name == "VEVENT": #Speichert die Komponenten eines Events in Variablen  
+            
+            startdt = component.get('dtstart').dt #Beginn    
+            enddt = component.get('dtend').dt #Ende
+            sdescrp = component.get('Description')          
+            s = sdescrp.split('\n')
+            sdozent = s[0]
+            ssets = s[1]
+            seventname = s[2] #Darstellungsproblem mit dem Zeichen in der ics Ã -> Ü
+            timestamp = startdt - currentdt #Zeitstempel
+            eventdur = enddt - startdt #Eventdauer
+                
+            if(timestamp.total_seconds() > eventdur.total_seconds()*(-1) and timestamp.total_seconds() < 0):
+                bStatus = True
+            else:
+                bStatus = False
+            
+            if(timestamp.total_seconds() > eventdur.total_seconds()*(-1)):
+                icsevents.append({'Veranstaltung':seventname, 'Dozent':sdozent, 'Start':startdt,'Ende':enddt,
+                'Sets':ssets, 'Belegt':bStatus, 'timestamp':timestamp.total_seconds(), 'Dauer':eventdur.total_seconds()})
+        
+
+    sorted(icsevents, key = lambda i: i['Start'])   
+    
+    return icsevents
+
+
+def check_roomstat(events):
+    
+    for key,value in enumerate(events): #prüft, ob gerade ein Event läuft
+        if(value['Belegt'] == True):
+            i = events.index(value)
+            bRaumstatus = True
+            break
+
+        else:
+            bRaumstatus = False
+    
+    return bRaumstatus
+
+def main():
+
+    while True:
+        
+        bRaumstatus = False
+        currentdt = datetime.datetime.today() #local time 
+        gcal = readics() #liest die ics in ein icalender-objekt
+        events = getupcoming_events(gcal, currentdt) #liefert sortierte Liste der Events
+        bRaumstatus = check_roomstat(events)
+        
+        #erstes Event 
+        print(events[0]['Veranstaltung'])
+        print(events[0]['Dozent'])
+        print(events[0]['Start'])
+        print(events[0]['Ende'])
+        
+        time.sleep(60)
+        #first event
+        #next event
+        '''
+        if(bRaumstatus == True):  #Steuert Ausgabe für 
+            print(bRaumstatus)
+            print(events[i]['Dozent'])
+            print(events[i]['Veranstaltung'])
+            print(events[i]['Start'])
+            print(events[i]['Ende'])
+        
+        else:
+            time.sleep(60)
+        '''
+        #Bild 1
+        #Bild 2
+        #Bild 3
+        #Sende Information über Raumbelegung an Display
+        '''
+        if(bRaumstatus == True):
+            print("Raum belegt von:")
+            print(events[i]['Dozent'])
+            print(events[i]['Veranstaltung'])
+            print(events[i]['Start'])
+            print(events[i]['Ende'])
+            #Pausiere Skriptablauf für Eventduration ?!
+            time.sleep(60) #Pausiere Ablauf des Skripts für 60s
+        else:
+            #Sende Information über Raumbelegung an Display
+            print("Raum frei")
+            time.sleep(60)
+        '''
+
+
+
+getics() #einmal pro Tag soll das BS die ics-Datei der EAH Stundenplanwebseite abrufen
+main() #anschließend soll dieses Skript laufen
