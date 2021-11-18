@@ -147,6 +147,7 @@ def main():
             if(bRoomstat == True):
                 
                 print("Raum besetzt")
+                epd.Clear()
                 imgRoomOccupied = Image.open(os.path.join(picdir, 'layout_Room_Occupied.bmp'))
                 layoutRoomOccupiedRed = Image.new('1', (epd.width, epd.height), 255)  # 255: clear the frame
                 
@@ -173,6 +174,7 @@ def main():
             elif(bRoomstat == False and currentdt.date() == Startdt.date()):
                 
                 print("Gerade keine Events")
+                epd.Clear()
                 imgRoomFree = Image.open(os.path.join(picdir, 'layout_Room_Free.bmp'))
                 layoutRoomFree = ImageDraw.Draw(imgRoomFree)
 
@@ -197,6 +199,7 @@ def main():
             else:
                 
                 print("Raum frei, Heute keine Events mehr")
+                epd.Clear()
                 imgRoomFree = Image.open(os.path.join(picdir, 'layout_Room_Free.bmp'))
                 layoutRoomFreeRed = Image.new('1', (epd.width, epd.height), 255)  # 255: clear the frame
                 
