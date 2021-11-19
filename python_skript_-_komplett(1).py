@@ -34,7 +34,8 @@ staticTextCurrentEvent = 'aktuelle Veranstaltung:' #statischer text aktuelle Ver
 staticTextOccupied = 'BESETZT' #Raum BESETZT
 staticTextNoEvent = 'Heute sind keine weiteren Veranstaltungen geplant!' #statischer text für Heute keine weiteren Veranstaltungen geplant! (fall 2 of free display)
 staticTextNextEventAt = 'nächste Veranstaltung am:'
-staticTextListEmpty = 'keine weiteren Veranstaltungen geplant!';
+staticTextListEmpty1 = 'keine weiteren';
+staticTextListEmpty2 = 'Veranstaltungen geplant!';
 
 #Fontstyles
 font18 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 18)
@@ -124,9 +125,16 @@ def main():
             if(len(events) == 0): 
                 
                 #Sicht 4 - Keine Veranstaltungen geplant
-                epd.clear()
-                layoutRoomOccupiedRedText.text((150, 180), staticTextListEmpty, fill = 0, font=font35)
+                epd.Clear()
+                layoutNoEventsFound = Image.new('1', (epd.width, epd.height), 255)  # 255: clear the frame
+                layoutNoEventsFoundText = ImageDraw.Draw(layoutNoEventsFound)
+                
+                layoutNoEventsFoundText.text((200, 180), staticTextListEmpty1, fill = 0, font=font35)
+                layoutNoEventsFoundText.text((125, 220), staticTextListEmpty2, fill = 0, font=font35)
+                
+                epd.displayblack(epd.getbuffer(layoutNoEventsFound))
                 print("Keine Veranstaltungen geplant")
+                time.sleep(3600)
             
             else: 
                 #Instanziere Variablen für das aktuelle/nächste Event-Objekt = erstes Element in der Eventliste
@@ -150,7 +158,7 @@ def main():
                 #Sicht 1 -> Event läuft  
                 if(bRoomstat == True):
                     
-                    epd.clear()
+                    epd.Clear()
                     imgRoomOccupied = Image.open(os.path.join(picdir, 'layout_Room_Occupied.bmp'))
                     layoutRoomOccupiedRed = Image.new('1', (epd.width, epd.height), 255)  # 255: clear the frame
                     
@@ -177,7 +185,7 @@ def main():
                 #Sicht 2 -> kein Event, nächstes Event noch am selben Tag
                 elif(bRoomstat == False and currentdt.date() == Startdt.date()):
                     
-                    epd.clear()
+                    epd.Clear()
                     imgRoomFree = Image.open(os.path.join(picdir, 'layout_Room_Free.bmp'))
                     layoutRoomFree = ImageDraw.Draw(imgRoomFree)
 
@@ -205,7 +213,7 @@ def main():
                 #Sicht 3 -> heute keine Events mehr
                 else:
                     
-                    epd.clear()
+                    epd.Clear()
                     imgRoomFree = Image.open(os.path.join(picdir, 'layout_Room_Free.bmp'))
                     layoutRoomFreeRed = Image.new('1', (epd.width, epd.height), 255)  # 255: clear the frame
                     
@@ -226,7 +234,7 @@ def main():
                     layoutRoomFree.text((420, 432), textEventEnd, fill = 'black', font=font25)
 
                     epd.display(epd.getbuffer(imgRoomFree), epd.getbuffer(layoutRoomFreeRed))
-                    time.sleep(900) #Aktualisiert sich jeden Viertel Stunde
+                    time.sleep(3600) #Aktualisiert sich jeden Viertel Stunde
     
 
 
@@ -256,7 +264,6 @@ ob das erste Event den Status "belegt raum" oder "nicht" enthält.'''
             i = events.index(value)
             bRoomstat = True
             break
-
         else:
             bRoomstat = False
     
