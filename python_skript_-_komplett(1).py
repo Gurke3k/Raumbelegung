@@ -34,6 +34,7 @@ staticTextCurrentEvent = 'aktuelle Veranstaltung:' #statischer text aktuelle Ver
 staticTextOccupied = 'BESETZT' #Raum BESETZT
 staticTextNoEvent = 'Heute sind keine weiteren Veranstaltungen geplant!' #statischer text für Heute keine weiteren Veranstaltungen geplant! (fall 2 of free display)
 staticTextNextEventAt = 'nächste Veranstaltung am:'
+staticTextListEmpty = 'keine weiteren Veranstaltungen geplant!';
 
 #Fontstyles
 font18 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 18)
@@ -123,6 +124,8 @@ def main():
             if(len(events) == 0): 
                 
                 #Sicht 4 - Keine Veranstaltungen geplant
+                epd.clear()
+                layoutRoomOccupiedRedText.text((150, 180), staticTextListEmpty, fill = 0, font=font35)
                 print("Keine Veranstaltungen geplant")
             
             else: 
