@@ -44,48 +44,6 @@ font30 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 30)
 font35 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 35) 
 font90 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 90)
 
-''' Funktionen zum Behandeln von wiederkehrenden Events
-def parse_recurrences(recur_rule, start, exclusions): 
-    
-    """ Find all reoccuring events """
-    rules = rruleset()
-    first_rule = rrulestr(recur_rule, dtstart=start)
-    rules.rrule(first_rule)
-    if not isinstance(exclusions, list):
-        exclusions = [exclusions]
-        for xdate in exclusions:
-            try:
-                rules.exdate(xdate.dts[0].dt)
-            except AttributeError:
-                pass
-    now = datetime.now(timezone.utc)
-    this_year = now + timedelta(days=60)
-    dates = []
-    for rule in rules.between(now, this_year):
-        dates.append(rule.strftime("%D %H:%M"))
-    return dates
-
-def parse_events_with_recurrences()
-    
-    icalfile = open('', 'rb') #Hier Dateipfad zur Ics setzen
-    gcal = icalendar.Calendar.from_ical(icalfile.read())
-    for component in gcal.walk():
-        if component.name == "VEVENT":
-            summary = component.get('summary')
-            description = component.get('description')
-            location = component.get('location')
-            startdt = component.get('dtstart').dt
-            enddt = component.get('dtend').dt
-            exdate = component.get('exdate')
-
-            if component.get('rrule'):
-                reoccur = component.get('rrule').to_ical().decode('utf-8')
-                for item in parse_recurrences(reoccur, startdt, exdate):
-                    print("{0} bis {1}: {2}\n".format(item, summary, description, location))
-                
-            else:
-                print("{0} bis {1}\n{3}\n".format(startdt.strftime("%d/%m/%y %H:%M"), enddt.strftime("%d/%m/%y %H:%M"), summary, description, location))   
-'''
 #Herunterladen und Speichern der ICS
 def getics(): 
     
@@ -108,16 +66,16 @@ def get_upcoming_events(gcal, Currentdt):
         
         if component.name == "VEVENT": #Speichert die Komponenten eines Events in Variablen  
             
-            Startdt = component.get('dtstart').dt #Event-Beginn    
-            Enddt = component.get('dtend').dt #Event-Ende
+            startdt = component.get('dtstart').dt #Event-Beginn    
+            enddt = component.get('dtend').dt #Event-Ende
             sDescrp = component.get('description')        
             sDescrp = sDescrp.split('\n')
             sProf = sDescrp[0]
             sSets = sDescrp[1]
             sEventname = sDescrp[2] #Darstellungsproblem mit dem Zeichen in der ics Ã -> Ü
                
-            tdeltaTimestamp = Startdt - Currentdt #Zeitstempel
-            tdeltaEventdur = Enddt - Startdt #Eventdauer
+            tdeltaTimestamp = startdt - Currentdt #Zeitstempel
+            tdeltaEventdur = enddt - startdt #Eventdauer
                
             if(tdeltaTimestamp.total_seconds() > tdeltaEventdur.total_seconds()*(-1) and tdeltaTimestamp.total_seconds() < 0):
                 bStatus = True
@@ -125,7 +83,7 @@ def get_upcoming_events(gcal, Currentdt):
                 bStatus = False
             
             if(tdeltaTimestamp.total_seconds() > tdeltaEventdur.total_seconds()*(-1)):
-                icsevents.append({'eventname':sEventname, 'profname':sProf, 'starttime':Startdt,'endtime':Enddt,
+                icsevents.append({'eventname':sEventname, 'profname':sProf, 'starttime':startdt,'endtime':enddt,
                 'sets':sSets, 'roomstatus':bStatus, 'timestamp':tdeltaTimestamp.total_seconds(), 'eventduration':tdeltaEventdur.total_seconds()})
         
 
@@ -250,8 +208,9 @@ def main():
             else:
                 #Initialisiere Variablen für das aktuelle/nächste Event-Objekt = erstes Element in der Eventliste
                 fTimestamp = events[0]['timestamp'] #Zeitstempel zum Steuern der Bildschirmaktualisierung
-                bRoomstatusus = events[0]['roomstatus'] #Event-Status schaltet Raum auf frei oder belegt
+                bRoomstatus = events[0]['roomstatus'] #Event-Status schaltet Raum auf frei oder belegt
                 
+                fEventdur = events[0]['eventduration']
                 sProf = events[0]['profname']
                 sSubject = events[0]['eventname']
                 Startdt = events[0]['starttime']
