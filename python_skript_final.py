@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.DEBUG) #??
 #Programmbeschreibung
 #Exception falls es zu einem Fehler beim Herunterladen kommt? Datei von letzter Aktualisierung sichern
 #get_upcoming_events Darstellungsfehler -> Ü
-#Liste enthält keine Events ... prüfe ob überhaupt Events in der Liste sind, bevor Instanzierungen versucht wird ~l 128 Fehler beheben (fEventdur)
+#Ansonsten müsste es laufen :-)))
 
 #Static Globals
 ics_url = "https://stundenplanung.eah-jena.de/ical/raum/SPLUSF88401.ics" #ICS-Datei mit Belegungsdaten für Raum 03.03.33
@@ -34,8 +34,6 @@ staticTextCurrentEvent = 'aktuelle Veranstaltung:' #statischer text aktuelle Ver
 staticTextOccupied = 'BESETZT' #Raum BESETZT
 staticTextNoEvent = 'Heute sind keine weiteren Veranstaltungen geplant!' #statischer text für Heute keine weiteren Veranstaltungen geplant! (fall 2 of free display)
 staticTextNextEventAt = 'nächste Veranstaltung am:'
-staticTextListEmpty1 = 'keine weiteren';
-staticTextListEmpty2 = 'Veranstaltungen geplant!';
 
 #Fontstyles
 font18 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 18)
@@ -93,13 +91,20 @@ def getupcoming_events(gcal, currentdt): #Durchsucht die ics und gibt eine sorti
     
     return icsevents
 
-#def display_occupied(): 
 
-#def display_upcoming_events():
+def check_roomstat(events): ##prüft, ob gerade ein Event läuft
+    
+    for key,value in enumerate(events): 
+        if(value['Belegt'] == True):
+            i = events.index(value)
+            bRoomstat = True
+            break
 
-#def display_no_events_today():
+        else:
+            bRoomstat = False
+    
+    return bRoomstat
 
-#def display_no_events_in_list():
 
 def main():
 
@@ -112,132 +117,108 @@ def main():
 
         while True:
             
-            #Raumstatus True: belegt, False: frei
-            bRoomstat = False 
-            #Ruft aktuelle, lokale Zeit und Datum ab
-            currentdt = datetime.datetime.today() 
-            #Liest die ics in ein icalender-objekt
-            gcal = readics() 
-            #Liefert sortierte Liste der Events
-            events = getupcoming_events(gcal, currentdt) 
-
-            #prüft ob laut ics noch Events geplant sind
-            if(len(events) == 0): 
-                
-                #Sicht 4 - Keine Veranstaltungen geplant
-                epd.Clear()
-                layoutNoEventsFound = Image.new('1', (epd.width, epd.height), 255)  # 255: clear the frame
-                layoutNoEventsFoundText = ImageDraw.Draw(layoutNoEventsFound)
-                
-                layoutNoEventsFoundText.text((200, 180), staticTextListEmpty1, fill = 0, font=font35)
-                layoutNoEventsFoundText.text((125, 220), staticTextListEmpty2, fill = 0, font=font35)
-                
-                epd.displayblack(epd.getbuffer(layoutNoEventsFound))
-                print("Keine Veranstaltungen geplant")
-                time.sleep(3600)
+            f = 0  #Event-Zähler
+            bRoomstat = False #Raumstatus True: belegt, False: frei
             
-            else: 
-                #Instanziere Variablen für das aktuelle/nächste Event-Objekt = erstes Element in der Eventliste
-                fTimestamp = events[0]['timestamp'] #Zeitstempel zum Steuern der Bildschirmaktualisierung
-                fEventdur = events[0]['Dauer'] #Event-Dauer zum Steuern der Bildschirmaktualisierung
-                bRoomstat = events[0]['Belegt'] #Event-Status schaltet Raum auf frei oder belegt
-                sProf = events[0]['Dozent']
-                sSubject = events[0]['eventname']
-                Startdt = events[0]['Start']
-                Enddt = events[0]['Ende']
+            currentdt = datetime.datetime.today() #Ruft aktuelle, lokale Zeit und Datum ab
+            gcal = readics() #Liest die ics in ein icalender-objekt
+            events = getupcoming_events(gcal, currentdt) #Liefert sortierte Liste der Events
+            
+            #Instanziere Variablen für das aktuelle/nächste Event-Objekt
+            fEventduration = events[f]['Dauer'] #Event Duration zum Steuern der Bildschirmaktualisierung
+            sProf = events[f]['Dozent']
+            sSubject = events[f]['eventname']
+            Startdt = events[f]['Start']
+            Enddt = events[f]['Ende']
 
-                #Instanziere Texte für das Display
-                textEventProf = sProf #Veranstaltung Prof.
-                textEventSubject = sSubject #Veranstaltung Fach
-                textEventStart = Startdt.strftime('%H:%M') #'HH:MM' #Startzeit Event
-                textEventEnd = Enddt.strftime('%H:%M') #'HH:MM' #Endzeit
-                textEventDate = Startdt.strftime('%d.%m.%Y') #Datum aktuelles/nächstes Event
-                textDate = currentdt.strftime('%d.%m.%Y') #Datum heutiger Tag Event
-                textRefreshTime = currentdt.strftime('%H:%M') #Zeit zu der das Display zuletzt aktualisiert wurde 'HH:MM'
+            #Instanziere Texte für das Display
+            textEventProf = sProf #Veranstaltung Prof.
+            textEventSubject = sSubject #Veranstaltung Fach
+            textEventStart = Startdt.strftime('%H:%M') #'HH:MM' #Startzeit Event
+            textEventEnd = Enddt.strftime('%H:%M') #'HH:MM' #Endzeit Event textEventDate
+            textEventDate = Startdt.strftime('%d.%m.%Y') #Datum aktuelles/nächstes Event
+            textDate = currentdt.strftime('%d.%m.%Y') #Datum heutiger Tag Event
+            textRefreshTime = currentdt.strftime('%H:%M') #Zeit zu der das Display zuletzt aktualisiert wurde 'HH:MM'
 
-                #Sicht 1 -> Event läuft  
-                if(bRoomstat == True):
-                    
-                    epd.Clear()
-                    imgRoomOccupied = Image.open(os.path.join(picdir, 'layout_Room_Occupied.bmp'))
-                    layoutRoomOccupiedRed = Image.new('1', (epd.width, epd.height), 255)  # 255: clear the frame
-                    
-                    layoutRoomOccupied = ImageDraw.Draw(imgRoomOccupied)
-                    layoutRoomOccupiedRedText = ImageDraw.Draw(layoutRoomOccupiedRed)  
-                    
-                    layoutRoomOccupied.text((41, 46), textRoom, fill = 'white', font=font35)
-                    layoutRoomOccupied.text((400, 46), textDate, fill = 'white', font=font35)
-                    layoutRoomOccupiedRedText.text((150, 180), staticTextOccupied, fill = 0, font=font90)
-                    layoutRoomOccupied.text((25, 348), staticTextCurrentEvent, fill = 'white', font=font30)
-                    layoutRoomOccupied.text((345, 345), textEventStart, fill = 'white', font=font35)
-                    layoutRoomOccupied.text((440, 343), staticTextTimeConnect, fill = 'white', font=font35)
-                    layoutRoomOccupied.text((460, 345), textEventEnd, fill = 'white', font=font35)
-                    layoutRoomOccupied.line((25, 383, 545, 383), fill = 'white',width=4)
-                    layoutRoomOccupied.text((25, 400), textEventSubject, fill = 'white',font=font25)
-                    layoutRoomOccupied.text((25, 432), textEventProf, fill = 'white', font=font25)
-                    
-                    epd.display(epd.getbuffer(imgRoomOccupied), epd.getbuffer(layoutRoomOccupiedRed))
-
-                    fsleep = fEventdur + fTimestamp
-                    time.sleep(fsleep)
-                    #Aktualisiert sich erst wieder, wenn das Event vorbei ist
-
-                #Sicht 2 -> kein Event, nächstes Event noch am selben Tag
-                elif(bRoomstat == False and currentdt.date() == Startdt.date()):
-                    
-                    epd.Clear()
-                    imgRoomFree = Image.open(os.path.join(picdir, 'layout_Room_Free.bmp'))
-                    layoutRoomFree = ImageDraw.Draw(imgRoomFree)
-
-                    layoutRoomFree.text((41, 46), textRoom, fill = 'black', font=font35)
-                    layoutRoomFree.text((350, 25), textDate, fill = 'black', font=font30)
-                    layoutRoomFree.text((350, 70), staticTextRefresh, fill = 'black', font=font25)
-                    layoutRoomFree.text((564, 70), textRefreshTime, fill = 'black', font=font25)
-                    layoutRoomFree.text((238, 180), staticTextFree, fill = 'black', font=font90)
-                    layoutRoomFree.text((25, 348), staticTextNextEvent, fill = 'black', font=font30)
-                    layoutRoomFree.text((345, 345), textEventStart, fill = 'black', font=font35)
-                    layoutRoomFree.text((440, 343), staticTextTimeConnect, fill = 'black', font=font35)
-                    layoutRoomFree.text((460, 345), textEventEnd, fill = 'black', font=font35)
-                    layoutRoomFree.line((25, 383, 545, 383), fill = 'black', width=4)
-                    layoutRoomFree.text((25, 400), textEventSubject, fill = 'black',font=font25)
-                    layoutRoomFree.text((25, 432), textEventProf, fill = 'black', font=font25)
+            #Prüft Eventliste, ob gerade ein Event läuft
+            bRoomstat = check_roomstat(events)
+            
+            #Sicht 1 -> Event läuft  
+            if(bRoomstat == True):
                 
-                    epd.displayblack(epd.getbuffer(imgRoomFree)) #Bild wird an Display gesendet
-                    
-                    fsleep = Startdt - currentdt
-                    if(fsleep.total_seconds() > 3600):
-                        time.sleep(3600)
-                    else:
-                        time.sleep(fsleep.total_seconds()) #Aktualisiere Display Zu Beginn des nächsten Events
+                print("Raum besetzt")
+                imgRoomOccupied = Image.open(os.path.join(picdir, 'layout_Room_Occupied.bmp'))
+                layoutRoomOccupiedRed = Image.new('1', (epd.width, epd.height), 255)  # 255: clear the frame
+                
+                layoutRoomOccupied = ImageDraw.Draw(imgRoomOccupied)
+                layoutRoomOccupiedRedText = ImageDraw.Draw(layoutRoomOccupiedRed)  
+                
+                layoutRoomOccupied.text((41, 46), textRoom, fill = 'white', font=font35)
+                layoutRoomOccupied.text((400, 46), textDate, fill = 'white', font=font35)
+                layoutRoomOccupiedRedText.text((150, 180), staticTextOccupied, fill = 0, font=font90)
+                layoutRoomOccupied.text((25, 348), staticTextCurrentEvent, fill = 'white', font=font30)
+                layoutRoomOccupied.text((345, 345), textEventStart, fill = 'white', font=font35)
+                layoutRoomOccupied.text((440, 343), staticTextTimeConnect, fill = 'white', font=font35)
+                layoutRoomOccupied.text((460, 345), textEventEnd, fill = 'white', font=font35)
+                layoutRoomOccupied.line((25, 383, 545, 383), fill = 'white',width=4)
+                layoutRoomOccupied.text((25, 400), textEventSubject, fill = 'white',font=font25)
+                layoutRoomOccupied.text((25, 432), textEventProf, fill = 'white', font=font25)
+                
+                epd.display(epd.getbuffer(imgRoomOccupied), epd.getbuffer(layoutRoomOccupiedRed))
 
-                #Sicht 3 -> heute keine Events mehr
-                else:
-                    
-                    epd.Clear()
-                    imgRoomFree = Image.open(os.path.join(picdir, 'layout_Room_Free.bmp'))
-                    layoutRoomFreeRed = Image.new('1', (epd.width, epd.height), 255)  # 255: clear the frame
-                    
-                    layoutRoomFree = ImageDraw.Draw(imgRoomFree)
-                    layoutRoomFreeRedText = ImageDraw.Draw(layoutRoomFreeRed)  
-                    
-                    layoutRoomFree.text((41, 46), textRoom, fill = 'black', font=font35)
-                    layoutRoomFree.text((350, 25), textDate, fill = 'black', font=font30)
-                    layoutRoomFree.text((350, 70), staticTextRefresh, fill = 'black', font=font25)
-                    layoutRoomFree.text((564, 70), textRefreshTime, fill = 'black', font=font25)
-                    layoutRoomFree.text((238, 180), staticTextFree, fill = 'black', font=font90)
-                    layoutRoomFreeRedText.text((25, 348), staticTextNoEvent, fill = 0, font=font25)
-                    layoutRoomFreeRedText.line((25, 380, 605, 380), fill = 0,width=4)
-                    layoutRoomFree.text((25, 400), staticTextNextEventAt, fill = 'black',font=font25)
-                    layoutRoomFree.text((335, 400), textEventDate, fill = 'black',font=font25)
-                    layoutRoomFree.text((335, 432), textEventStart, fill = 'black',font=font25)
-                    layoutRoomFree.text((405, 432), staticTextTimeConnect, fill = 'black',font=font25)
-                    layoutRoomFree.text((420, 432), textEventEnd, fill = 'black', font=font25)
+                #Aktualisiert sich erst wieder, wenn das Event vorbei ist
+                time.sleep(fEventduration)
 
-                    epd.display(epd.getbuffer(imgRoomFree), epd.getbuffer(layoutRoomFreeRed))
-                    time.sleep(3600) #Aktualisiert sich jeden Viertel Stunde
+            #Sicht 2 -> kein Event, nächstes Event noch am selben Tag
+            elif(bRoomstat == False and currentdt.date() == Startdt.date()):
+                
+                print("Gerade keine Events")
+                imgRoomFree = Image.open(os.path.join(picdir, 'layout_Room_Free.bmp'))
+                layoutRoomFree = ImageDraw.Draw(imgRoomFree)
+
+                layoutRoomFree.text((41, 46), textRoom, fill = 'black', font=font35)
+                layoutRoomFree.text((350, 25), textDate, fill = 'black', font=font30)
+                layoutRoomFree.text((350, 70), staticTextRefresh, fill = 'black', font=font25)
+                layoutRoomFree.text((564, 70), textRefreshTime, fill = 'black', font=font25)
+                layoutRoomFree.text((238, 180), staticTextFree, fill = 'black', font=font90)
+                layoutRoomFree.text((25, 348), staticTextNextEvent, fill = 'black', font=font30)
+                layoutRoomFree.text((345, 345), textEventStart, fill = 'black', font=font35)
+                layoutRoomFree.text((440, 343), staticTextTimeConnect, fill = 'black', font=font35)
+                layoutRoomFree.text((460, 345), textEventEnd, fill = 'black', font=font35)
+                layoutRoomFree.line((25, 383, 545, 383), fill = 'black', width=4)
+                layoutRoomFree.text((25, 400), textEventSubject, fill = 'black',font=font25)
+                layoutRoomFree.text((25, 432), textEventProf, fill = 'black', font=font25)
+            
+                epd.displayblack(epd.getbuffer(imgRoomFree)) #Bild wird an Display gesendet
+                
+                time.sleep(60) #Aktualisiere Display Zu Beginn des nächsten Events
+            
+            #Sicht 3 -> heute keine Events mehr
+            else:
+                
+                print("Raum frei, Heute keine Events mehr")
+                imgRoomFree = Image.open(os.path.join(picdir, 'layout_Room_Free.bmp'))
+                layoutRoomFreeRed = Image.new('1', (epd.width, epd.height), 255)  # 255: clear the frame
+                
+                layoutRoomFree = ImageDraw.Draw(imgRoomFree)
+                layoutRoomFreeRedText = ImageDraw.Draw(layoutRoomFreeRed)  
+                
+                layoutRoomFree.text((41, 46), textRoom, fill = 'black', font=font35)
+                layoutRoomFree.text((350, 25), textDate, fill = 'black', font=font30)
+                layoutRoomFree.text((350, 70), staticTextRefresh, fill = 'black', font=font25)
+                layoutRoomFree.text((564, 70), textRefreshTime, fill = 'black', font=font25)
+                layoutRoomFree.text((238, 180), staticTextFree, fill = 'black', font=font90)
+                layoutRoomFreeRedText.text((25, 348), staticTextNoEvent, fill = 0, font=font25)
+                layoutRoomFreeRedText.line((25, 380, 605, 380), fill = 0,width=4)
+                layoutRoomFree.text((25, 400), staticTextNextEventAt, fill = 'black',font=font25)
+                layoutRoomFree.text((335, 400), textEventDate, fill = 'black',font=font25)
+                layoutRoomFree.text((335, 432), textEventStart, fill = 'black',font=font25)
+                layoutRoomFree.text((405, 432), staticTextTimeConnect, fill = 'black',font=font25)
+                layoutRoomFree.text((420, 432), textEventEnd, fill = 'black', font=font25)
+
+                epd.display(epd.getbuffer(imgRoomFree), epd.getbuffer(layoutRoomFreeRed))
+                time.sleep(300) #Aktualisiert sich alle fünf Minuten
     
-
-
 
     except IOError as e:    #??
         logging.info(e)
@@ -250,22 +231,4 @@ def main():
 
 
 getics() #Skript soll einmal pro Tag neugestartet werden
-main() #anschließend soll dieses Skript laufe
-
-
-#def check_roomstat(events): #prüft, ob gerade ein Event läuft
-'''Diese Funktion würde den Index des laufenden Events zurückgegeben. 
-Da get_upcoming_events eine sortierte Liste der Daten liefert, ist es nur relevant, 
-ob das erste Event den Status "belegt raum" oder "nicht" enthält.'''
-#und 
-'''    
-    for key,value in enumerate(events): 
-        if(value['Belegt'] == True):
-            i = events.index(value)
-            bRoomstat = True
-            break
-        else:
-            bRoomstat = False
-    
-    return bRoomstat
-'''
+main() #anschließend soll dieses Skript laufen
