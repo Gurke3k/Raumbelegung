@@ -72,7 +72,7 @@ def get_upcoming_events(gcal, Currentdt):
             sDescrp = sDescrp.split('\n')
             sProf = sDescrp[0]
             sSets = sDescrp[1]
-            sEventname = sDescrp[2] #Darstellungsproblem mit dem Zeichen in der ics Ã -> Ü
+            sEventname = sDescrp[2].replace('Ã','Ü')
                
             tdeltaTimestamp = startdt - Currentdt #Zeitstempel
             tdeltaEventdur = enddt - startdt #Eventdauer
